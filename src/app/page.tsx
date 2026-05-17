@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
-import { Code2, Play, Terminal, Layers, Palette, Maximize2, Minimize2, LayoutPanelLeft } from "lucide-react";
+import { Code2, Play, Terminal, Layers, Palette, Maximize2, Minimize2, LayoutPanelLeft, Menu, X } from "lucide-react";
 import styles from "./workspace.module.css";
 
 interface Language {
@@ -99,9 +99,9 @@ export default function Home() {
   const [isMaximized, setIsMaximized] = useState<boolean>(false);
   const [themeMode, setThemeMode] = useState<"dark" | "midnight" | "ocean" | "hacker">("dark");
   const [rightPanelTab, setRightPanelTab] = useState<"terminal" | "preview">("terminal");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false); // NEW MOBILE STATE
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // 1. AUTO-SAVE MEMORY: Load from Local Storage on initial boot
   useEffect(() => {
     setMounted(true);
     const savedCode = localStorage.getItem("eyrae_code_map");
@@ -114,7 +114,6 @@ export default function Home() {
     }
   }, []);
 
-  // 2. AUTO-SAVE MEMORY: Save silently on every keystroke
   useEffect(() => {
     if (mounted) {
       localStorage.setItem("eyrae_code_map", JSON.stringify(codeMap));
@@ -123,18 +122,15 @@ export default function Home() {
 
   const handleLanguageChange = (lang: Language) => {
     setSelectedLang(lang);
+    setIsMobileMenuOpen(false); // Auto-close drawer on mobile when clicking a lang
     if (lang.id !== "html" && lang.id !== "css") {
-      setRightPanelTab("terminal"); // Auto-switch back to terminal for real languages
+      setRightPanelTab("terminal"); 
     }
   };
 
   const handleCodeChange = (val: string | undefined) => {
     if (val === undefined) return;
     setCodeMap(prev => ({ ...prev, [selectedLang.id]: val }));
-  };
-
-  const toggleMaximize = () => {
-    setIsMaximized(!isMaximized);
   };
 
   const cycleTheme = () => {
@@ -153,7 +149,6 @@ export default function Home() {
   
   const themeStyles = getThemeStyles();
 
-  // 3. PRO SHORTCUTS: Bind Ctrl+Enter inside the Monaco Editor
   const handleEditorMount = (editor: any, monaco: any) => {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       document.getElementById("run-code-btn")?.click();
@@ -164,7 +159,6 @@ export default function Home() {
     setIsRunning(true);
     setIsError(false);
     
-    // THE WEB CANVAS CATCH: Intercept HTML/CSS instantly
     if (selectedLang.id === "html" || selectedLang.id === "css") {
       setRightPanelTab("preview");
       setIsError(false);
@@ -221,7 +215,7 @@ export default function Home() {
         <header className={`${styles.glassPanel} ${styles.header}`}>
           <div className={styles.branding}>
             <div className={styles.logoBox}>
-              <Code2 style={{ width: "24px", height: "24px", color: "#fff" }} /> {/* Developer Logo Upgrade */}
+              <Code2 style={{ width: "24px", height: "24px", color: "#fff" }} />
             </div>
             <div className={styles.titleGroup}>
               <h1>Eyrae Code Studios</h1>
@@ -241,6 +235,14 @@ export default function Home() {
               <Palette size={16} style={{ color: themeMode === "ocean" ? "#38bdf8" : themeMode === "hacker" ? "#4ade80" : "#a855f7" }} />
               <span style={{ textTransform: "capitalize" }}>Theme: {themeMode}</span>
             </button>
+            {/* MOBILE HAMBURGER MENU */}
+            <button 
+              type="button"
+              className={styles.mobileMenuBtn}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <Menu size={20} />
+            </button>
           </div>
         </header>
       )}
@@ -248,12 +250,21 @@ export default function Home() {
       {/* PANELS WORKSPACE REGION */}
       <div className={styles.layoutGrid}>
         
-        {/* SIDEBAR NAVIGATION */}
+        {/* MOBILE OVERLAY BACKGROUND */}
+        {isMobileMenuOpen && (
+          <div className={styles.mobileOverlay} onClick={() => setIsMobileMenuOpen(false)} />
+        )}
+
+        {/* SIDEBAR NAVIGATION - Adds slide-in class on mobile */}
         {!isMaximized && (
-          <aside className={`${styles.glassPanel} ${styles.sidebar}`}>
+          <aside className={`${styles.glassPanel} ${styles.sidebar} ${isMobileMenuOpen ? styles.sidebarOpen : ""}`}>
             <div className={styles.sidebarTitle}>
-              <Layers size={14} />
-              Environments
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Layers size={14} /> Environments
+              </div>
+              <button className={styles.mobileCloseBtn} onClick={() => setIsMobileMenuOpen(false)}>
+                <X size={18} />
+              </button>
             </div>
             {LANGUAGES.map((lang) => {
               const isActive = selectedLang.id === lang.id;
@@ -279,14 +290,14 @@ export default function Home() {
           </aside>
         )}
 
-        {/* COMPILER FRAME & TERMINAL */}
-        <div style={{ flex: 1, display: "flex", gap: "16px", height: "100%", minWidth: 0, position: "relative", zIndex: 20 }}>
+        {/* COMPILER FRAME & TERMINAL - Now using .mainWorkspace wrapper */}
+        <div className={styles.mainWorkspace}>
           
           {/* EDITOR CANVAS BOX */}
           <div className={`${styles.glassPanel} ${styles.editorContainer}`}>
             <div className={styles.panelHeader}>
               <div style={{ display: "flex", alignItems: "center" }}>
-                <div className={styles.fileTabs} style={{ marginLeft: 0 }}>
+                <div className={styles.fileTabs}>
                   <div className={styles.fileTab} style={{ borderColor: `${selectedLang.iconColor}50`, color: selectedLang.iconColor }}>
                     <span style={{ fontSize: '10px' }}>●</span>
                     {selectedLang.extension}
@@ -302,12 +313,12 @@ export default function Home() {
                   style={{ padding: "8px 14px", borderRadius: "10px" }}
                 >
                   {isMaximized ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-                  <span>{isMaximized ? "Restore" : "Focus"}</span>
+                  <span className={styles.runBtnText}>{isMaximized ? "Restore" : "Focus"}</span>
                 </button>
 
                 <button id="run-code-btn" type="button" onClick={executeCode} disabled={isRunning} className={styles.runButton} title="Shortcut: Ctrl+Enter">
                   <Play style={{ width: "14px", height: "14px", fill: "#fff", animation: isRunning ? 'spin 1s linear infinite' : 'none' }} />
-                  {isRunning ? "Running..." : "Run Code (Ctrl+Enter)"}
+                  <span className={styles.runBtnText}>{isRunning ? "Running..." : "Run Code"}</span>
                 </button>
               </div>
             </div>
@@ -322,7 +333,7 @@ export default function Home() {
                   path={selectedLang.extension}
                   value={codeMap[selectedLang.id]}
                   onChange={handleCodeChange}
-                  onMount={handleEditorMount} // Attaches the Ctrl+Enter listener
+                  onMount={handleEditorMount} 
                   options={{
                     minimap: { enabled: false },
                     fontSize: 15,
@@ -345,10 +356,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* RIGHT CONSOLE TERMINAL CONTAINER - Always visible */}
+          {/* RIGHT CONSOLE TERMINAL CONTAINER */}
           <div className={`${styles.glassPanel} ${styles.consoleContainer}`}>
             
-            {/* Custom Tab Header */}
             <div className={styles.panelHeader} style={{ padding: '0 16px' }}>
               <div style={{ display: 'flex', gap: '16px' }}>
                 <button 
@@ -371,24 +381,21 @@ export default function Home() {
             {rightPanelTab === "terminal" ? (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', overflowY: 'auto' }}>
                 
-                {/* Custom Standard Input Box */}
                 <div style={{ marginBottom: '8px', fontSize: '10px', color: '#71717a', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>
                   Standard Input (stdin)
                 </div>
                 <textarea 
                   className={styles.inputArea} 
-                  placeholder="Type your inputs here (e.g. variables for C++ cin or Python input()...)"
+                  placeholder="Type variables here..."
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
                   spellCheck={false}
                 />
 
-                {/* Shell Formatted Output Screen */}
                 <div style={{ marginTop: '8px', marginBottom: '8px', fontSize: '10px', color: '#71717a', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}>
                   Shell Output (stdout)
                 </div>
                 
-                {/* 4. Output Shell Formatting Upgrade */}
                 <div className={`${styles.consoleScreen} ${isError ? styles.errorText : ""}`} style={{ padding: '12px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px', flex: 1, border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', color: '#52525b', userSelect: 'none' }}>
                     <span style={{ color: '#22c55e' }}>➜</span>
@@ -406,7 +413,6 @@ export default function Home() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px' }}>
-                {/* 1. Interactive Web Canvas iframe */}
                 <div style={{ flex: 1, background: '#fff', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <iframe
                     title="Web Canvas Preview"

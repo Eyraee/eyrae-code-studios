@@ -16,7 +16,7 @@
   transition: background-color 0.5s ease;
 }
 
-/* Vibrant Radial Background Glow - Now Faster and Brighter! */
+/* Vibrant Radial Background Glow */
  @keyframes breatheAndFloat {
   0% { 
     transform: translate(-50%, -50%) scale(1) rotate(0deg); 
@@ -48,7 +48,7 @@
   z-index: 0;
   pointer-events: none;
   filter: blur(120px);
-  animation: breatheAndFloat 12s ease-in-out infinite; /* Sped up from 20s to 12s */
+  animation: breatheAndFloat 12s ease-in-out infinite; 
 }
 
 /* Glass panel design system */
@@ -131,6 +131,12 @@
   font-weight: 800;
 }
 
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 /* Button Soul & Interactions */
 .themeButton {
   background: rgba(255, 255, 255, 0.04);
@@ -183,7 +189,7 @@
   flex-shrink: 0;
   overflow-y: auto;
   position: relative;
-  z-index: 20;
+  z-index: 100;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -206,7 +212,7 @@
   padding: 0 8px 12px 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
 }
 
 .langTab {
@@ -275,6 +281,17 @@
   z-index: 2;
 }
 
+/* NEW MAIN WORKSPACE CLASS */
+.mainWorkspace {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  height: 100%;
+  min-width: 0;
+  position: relative;
+  z-index: 20;
+}
+
 /* Editor Frame Layout */
 .editorContainer {
   flex: 1;
@@ -316,13 +333,6 @@
   border-right: 1px solid rgba(255,255,255,0.05);
   position: relative;
   z-index: 50;
-}
-
-.windowControls:hover .circle { opacity: 1; }
-
-.circle {
-  width: 12px; height: 12px; border-radius: 50%; opacity: 0.8;
-  transition: opacity 0.2s; display: flex; align-items: center; justify-content: center;
 }
 
 .fileTabs {
@@ -373,6 +383,10 @@
 
 .runButton:active {
   transform: scale(0.92);
+}
+
+.runBtnText {
+  display: inline;
 }
 
 .editorWrapper {
@@ -501,4 +515,145 @@
 
 .errorText {
   color: #ef4444 !important; 
+}
+
+/* DEFAULT HIDDEN MOBILE ASSETS */
+.mobileMenuBtn {
+  display: none;
+}
+.mobileOverlay {
+  display: none;
+}
+.mobileCloseBtn {
+  display: none;
+}
+
+/* =========================================================
+   📱 RESPONSIVE MOBILE MATRIX (Phones & Small Tablets)
+   ========================================================= */
+@media (max-width: 768px) {
+  .studioContainer {
+    padding: 10px;
+    gap: 12px;
+  }
+  
+  .header {
+    height: 60px;
+    padding: 0 12px;
+  }
+
+  .logoBox {
+    width: 36px;
+    height: 36px;
+  }
+
+  .titleGroup h1 {
+    font-size: 20px;
+  }
+
+  .titleGroup p {
+    display: none; /* Hide subtitle to save header space */
+  }
+
+  /* Hamburger Menu Button */
+  .mobileMenuBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e4e4e7;
+    padding: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .themeButton span {
+    display: none;
+  }
+  .themeButton {
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  /* ✅ SCROLLABLE STACK: Fixes cramped UI */
+  .mainWorkspace {
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto; /* Allows you to scroll down to terminal! */
+    overflow-x: hidden;
+    padding-bottom: 20px; /* Breathing room at bottom */
+  }
+
+  .editorContainer {
+    flex: none; /* Stops it from crushing */
+    height: 55vh; /* Dedicated height */
+    min-height: 350px;
+  }
+
+  .consoleContainer {
+    width: 100%;
+    flex: none; /* Stops it from crushing */
+    height: 55vh; /* Dedicated height */
+    min-height: 350px;
+  }
+
+  /* ✅ FIXED DRAWER: Fixes sidebar getting trapped */
+  .sidebar {
+    position: fixed; /* Breaks out of relative grids */
+    top: 0;
+    left: -120%;
+    width: 280px;
+    height: 100dvh; /* Full screen height */
+    z-index: 9999; /* Absolute top priority */
+    background: rgba(10, 10, 14, 0.98);
+    backdrop-filter: blur(40px);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0 20px 20px 0;
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.8);
+  }
+
+  .sidebarOpen {
+    left: 0;
+  }
+
+  .mobileCloseBtn {
+    display: flex;
+    background: transparent;
+    border: none;
+    color: #a1a1aa;
+    padding: 4px;
+    cursor: pointer;
+  }
+
+  /* ✅ FIXED OVERLAY: Covers the entire viewport */
+  .mobileOverlay {
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9998; /* Just below the sidebar */
+    backdrop-filter: blur(4px);
+    display: block;
+  }
+
+  .runBtnText {
+    display: none;
+  }
+  .runButton {
+    padding: 8px 12px;
+  }
+
+  .windowControls {
+    padding-right: 12px;
+  }
+  
+  .fileTabs {
+    margin-left: 6px;
+  }
+
+  .bentoMetrics {
+    padding: 12px;
+  }
 }
